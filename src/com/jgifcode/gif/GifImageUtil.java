@@ -10,16 +10,30 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import com.jgifcode.gif.Scalr.Rotation;
+
 public class GifImageUtil {
 
 	static Logger logger = Logger.getLogger(GifImageUtil.class.getName());
 
+	
+	public enum FlipDirection{
+		HORIZONTAL , VERTICAL;
+	}
+	
+	public enum RotationDegree{
+		DEGREE_90 , DEGREE_180 , DEGREE_270;
+	}
+	
+	
+	
 	/**
 	 * 
 	 * @param filePath
@@ -121,6 +135,68 @@ public class GifImageUtil {
 		ResizeGifImage.resize(srcPath, dstPath, newWidth, newHeight);
 
 	}
+	
+	public static void flipGif(final String srcPath, final String dstPath,
+			final FlipDirection direction) {
+		try {
+			GifAttributes attributes = new GifAttributes(srcPath);
+
+			BufferedImage[] images = null;
+			images = GifImageUtil.readGif(srcPath);
+			
+			BufferedImage[] flippedImage = new BufferedImage[images.length];
+			
+			int i=0;
+			for(BufferedImage image : images){
+				switch(direction){
+				case HORIZONTAL:
+					flippedImage[i++] = Scalr.rotate(image, Rotation.FLIP_HORZ);
+					break;
+				case VERTICAL:
+					flippedImage[i++] = Scalr.rotate(image, Rotation.FLIP_VERT);
+					break;
+					
+				}
+			}
+			GifImageUtil.writeGif(dstPath, flippedImage, attributes);
+
+		} catch (Exception ex) {
+			logger.severe(ex.toString());
+		}
+	}
+	
+	public static void rotateGif(final String srcPath, final String dstPath,
+			final RotationDegree degree) {
+		try {
+			GifAttributes attributes = new GifAttributes(srcPath);
+
+			BufferedImage[] images = null;
+			images = GifImageUtil.readGif(srcPath);
+			
+			BufferedImage[] flippedImage = new BufferedImage[images.length];
+			
+			int i=0;
+			for(BufferedImage image : images){
+				switch(degree){
+				case DEGREE_90:
+					flippedImage[i++] = Scalr.rotate(image, Rotation.CW_90);
+					break;
+				case DEGREE_180:
+					flippedImage[i++] = Scalr.rotate(image, Rotation.CW_180);
+					break;
+				case DEGREE_270:
+					flippedImage[i++] = Scalr.rotate(image, Rotation.CW_270);
+					break;
+					
+				}
+			}
+			GifImageUtil.writeGif(dstPath, flippedImage, attributes);
+
+		} catch (Exception ex) {
+			logger.severe(ex.toString());
+		}
+	}
+	
 
 	private static BufferedImage[] getImages(final ImageInputStream imageStream)
 			throws IllegalArgumentException {
@@ -172,12 +248,8 @@ public class GifImageUtil {
 						.println("Usage:java GifImageUtil <src_filename> <destination_filename> <height> <width>");
 			} else {
 
-				GifImageUtil.resizeGif(args[0], args[1],
-						Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+				GifImageUtil.rotateGif(args[0], args[1],RotationDegree.DEGREE_180);
 			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
